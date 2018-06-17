@@ -1,0 +1,26 @@
+{
+  "name": "BinanceTradebot",
+  "version": "0.0.2",
+  "description": "Trade Crypto on Binance",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alan Guo",
+  "bin": {
+    "nbt": "./index.js"
+  },
+  "dependencies": {
+    "binance-api-node": "^0.8.0",
+    "chalk": "^2.3.0",
+    "clear": "0.0.1",
+    "configstore": "^3.1.2",
+    "figlet": "^1.2.0",
+    "inquirer": "^5.2.0",
+    "lodash": "^4.17.10",
+    "moment": "^2.22.1",
+    "numeral": "^2.0.6",
+    "ora": "^2.1.0"
+  }
+}
