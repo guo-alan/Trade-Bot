@@ -35,7 +35,8 @@ let last_price = 0.00
 let price_direction = 0
 let precision = 8
 let tot_cancel = 0
-
+let recentTrades = [];
+let size=0.1;
 const client = binance({
   apiKey: APIKEY,
   apiSecret: APISECRET
@@ -64,6 +65,16 @@ var default_pair_input = [{
   default: default_pair
 }, ]
 
+var monitor_input = [{
+  type: 'input',
+  name: 'size',
+  message: chalk.cyan('Enter Monitor Size'),
+  default: 0.3,
+  validate: function (value) {
+    var valid = !isNaN(parseFloat(value)) && (value > 0)
+    return valid || 'Please enter a number > 0'
+  },
+}, ]
 
 ask_initial_request = () => {
   console.log(" ")
@@ -71,7 +82,10 @@ ask_initial_request = () => {
     if (answer.menu === 'View Pair') {
       ask_default_pair()
     } else if (answer.menu === 'Monitor BTC') {
-      monitor_btc()
+      inquirer.prompt(monitor_input).then(answers => {
+        size=answers.size;
+        monitor_btc()
+      })
     } else if (answer.menu === 'Quit Bot') {
       process.exit()
     }
@@ -157,77 +171,40 @@ ask_default_pair = () => {
 }
 
 monitor_btc = () => {
-  default_pair="BTCUSDT"
-  const report = ora('Fetching 1 min candles...').start()
-
-    client.candles({
-        symbol: default_pair,
-        interval: '1m'
-      }).then(candles => {
-
-        conf.set('nbt.default_pair', default_pair)
-        default_pair_input[0].default = default_pair
-
-        candles.forEach((candle) => {
-          minute_prices.unshift(parseFloat(candle.close))
-        })
-
-        minute_price = parseFloat(candles[candles.length - 1].close)
-        minute_volume = parseFloat(candles[candles.length - 1].volume)
-        curr_min_delta = 100.00 * (candles[candles.length - 1].close - candles[candles.length - 1].open) / candles[candles.length - 1].open
-        last_min_delta = 100.00 * (candles[candles.length - 2].close - candles[candles.length - 2].open) / candles[candles.length - 2].open
-        prev_min_delta = 100.00 * (candles[candles.length - 3].close - candles[candles.length - 3].open) / candles[candles.length - 3].open
-        half_hour_delta = 100.00 * (candles[candles.length - 1].close - candles[candles.length - 30].close) / candles[candles.length - 30].open
-        one_hour_delta = 100.00 * (candles[candles.length - 1].close - candles[candles.length - 60].close) / candles[candles.length - 60].open
-        two_hour_delta = 100.00 * (candles[candles.length - 1].close - candles[candles.length - 120].close) / candles[candles.length - 120].open
-        price_direction = (parseFloat(candles[candles.length - 1].close) > last_price) ? 1 : ((parseFloat(candles[candles.length - 1].close) < last_price) ? -1 : 0)
-        last_price = parseFloat(candles[candles.length - 1].close)
-
-        report.text = candle_report()
-        const clean_candles = client.ws.candles(default_pair, '1m', candle => {
-
-          if (candle.isFinal) {
-            minute_prices.unshift(parseFloat(candle.close))
-          }
-
-          minute_volume = parseFloat(candle.volume)
-          minute_price = parseFloat(candle.close)
-          curr_min_delta = 100.00 * (candle.close - candle.open) / candle.open
-          last_min_delta = 100.00 * (minute_prices[0] - minute_prices[1]) / minute_prices[1]
-          prev_min_delta = 100.00 * (minute_prices[1] - minute_prices[2]) / minute_prices[2]
-          half_hour_delta = 100.00 * (minute_prices[0] - minute_prices[30]) / minute_prices[30]
-          one_hour_delta = 100.00 * (minute_prices[0] - minute_prices[60]) / minute_prices[60]
-          two_hour_delta = 100.00 * (minute_prices[0] - minute_prices[120]) / minute_prices[120]
-          price_direction = (parseFloat(candle.close) > last_price) ? 1 : ((parseFloat(candle.close) < last_price) ? -1 : 0)
-          last_price = parseFloat(candle.close)
-
-          report.text = candle_report()
-
-          if (minute_prices.length > 130) minute_prices.pop()
-        })
-
-        if (!tracking) {
-          tracking = true
-          process.stdin.setRawMode(true);
-          process.stdin.resume();
-          process.stdin.once('data', () => {
-            report.succeed()
-            if (tracking) {
-              tracking = false
-              clean_candles()
-              minute_prices = []
-              console.log(" ")
-              setTimeout(() => {
-                ask_buy_or_change()
-              }, 1000)
-            }
-          })
+  default_pair = "BTCUSDT"
+  client.trades({
+      symbol: default_pair,
+    }).then(trades => {
+      for (let x = 0; x < trades.length; x++) {
+        let alreadyAdded = false;
+        let lastPrice;
+        if (x == 0) {
+          lastPrice = trades[0].price;
+        } else {
+          lastPrice = trades[x - 1].price;
         }
-      })
-      .catch(error => {
-        report.fail(chalk.yellow("--> Invalid"))
-        console.error("ERROR 6 " + error)
-      })
+        for (let y = 0; y < recentTrades.length; y++) {
+          if (recentTrades[y].time == trades[x].time) {
+            alreadyAdded = true;
+          }
+        }
+        if (!alreadyAdded) {
+          if(trades[x].qty>size){
+            if (!trades[x].isBuyerMaker && trades[x].price > lastPrice) {
+              console.log(chalk.bold.green("Type: Buy | Value: $" + Number(trades[x].price).toFixed(2) + ' | Quantity: ' + Number(trades[x].qty).toFixed(3) + ' BTC'));
+            } else {
+              console.log(chalk.bold.red("Type: Sell | Value: $" + Number(trades[x].price).toFixed(2) + ' | Quantity: ' + Number(trades[x].qty).toFixed(3) + ' BTC'));
+            }
+          }
+          recentTrades.push(trades[x]);
+        }
+      }
+      monitor_btc()
+    })
+    .catch(error => {
+      report.fail(chalk.yellow("--> Invalid"))
+      console.error("ERROR 6 " + error)
+    })
 }
 candle_report = () => {
   return chalk.grey(moment().format('h:mm:ss').padStart(9)) +
