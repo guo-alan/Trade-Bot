@@ -39,6 +39,7 @@ let tot_cancel = 0;
 let recentTrades = [];
 let recentTrades1 = [];
 
+let enableGdax=false;
 let size = 0.1;
 const client = binance({
   apiKey: APIKEY,
@@ -274,52 +275,53 @@ monitor_btc = () => {
           recentTrades.push(trades[x]);
         }
       }
-
-      const gTrades = publicClient.getProductTrades("BTC-USD").then(trades => {
-        for (let x = 0; x < trades.length; x++) {
-          let alreadyAdded = false;
-          let lastPrice;
-          if (x == 0) {
-            lastPrice = trades[0].price;
-          } else {
-            lastPrice = trades[x - 1].price;
-          }
-          for (let y = 0; y < recentTrades1.length; y++) {
-            if (recentTrades1[y].time == trades[x].time) {
-              alreadyAdded = true;
+      if(enableGdax){
+        const gTrades = publicClient.getProductTrades("BTC-USD").then(trades => {
+          for (let x = 0; x < trades.length; x++) {
+            let alreadyAdded = false;
+            let lastPrice;
+            if (x == 0) {
+              lastPrice = trades[0].price;
+            } else {
+              lastPrice = trades[x - 1].price;
             }
-          }
-          if (!alreadyAdded) {
-            if (trades[x].size > size) {
-              if (trades[x].side == "buy") {
-                console.log(
-                  chalk.bold.green(
-                    "Exchange: GDAX    | Type: Buy  | Value: $" +
-                      Number(trades[x].price).toFixed(2) +
-                      " | Quantity: " +
-                      Number(trades[x].size).toFixed(3) +
-                      " BTC"
-                  )
-                );
-              } else {
-                console.log(
-                  chalk.bold.red(
-                    "Exchange: GDAX    | Type: Sell | Value: $" +
-                      Number(trades[x].price).toFixed(2) +
-                      " | Quantity: " +
-                      Number(trades[x].size).toFixed(3) +
-                      " BTC"
-                  )
-                );
+            for (let y = 0; y < recentTrades1.length; y++) {
+              if (recentTrades1[y].time == trades[x].time) {
+                alreadyAdded = true;
               }
             }
-            recentTrades1.push(trades[x]);
+            if (!alreadyAdded) {
+              if (trades[x].size > size) {
+                if (trades[x].side == "buy") {
+                  console.log(
+                    chalk.bold.green(
+                      "Exchange: GDAX    | Type: Buy  | Value: $" +
+                        Number(trades[x].price).toFixed(2) +
+                        " | Quantity: " +
+                        Number(trades[x].size).toFixed(3) +
+                        " BTC"
+                    )
+                  );
+                } else {
+                  console.log(
+                    chalk.bold.red(
+                      "Exchange: GDAX    | Type: Sell | Value: $" +
+                        Number(trades[x].price).toFixed(2) +
+                        " | Quantity: " +
+                        Number(trades[x].size).toFixed(3) +
+                        " BTC"
+                    )
+                  );
+                }
+              }
+              recentTrades1.push(trades[x]);
+            }
           }
-        }
-      })
-      .catch(error => {
-        report.fail(chalk.yellow("Error"));
-      });;
+        })
+        .catch(error => {
+          report.fail(chalk.yellow("Error"));
+        });;
+      }
       monitor_btc();
     })
     .catch(error => {
