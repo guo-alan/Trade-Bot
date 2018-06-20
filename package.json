@@ -1,7 +1,7 @@
 {
-  "name": "BinanceTradebot",
+  "name": "Crypto Bot",
   "version": "0.0.2",
-  "description": "Trade Crypto on Binance",
+  "description": "Cryptocurrency Monitor and Trade Bot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
