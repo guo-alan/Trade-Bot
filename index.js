@@ -10,10 +10,17 @@ const binance = require("binance-api-node").default;
 const inquirer = require("inquirer");
 const Gdax = require("gdax");
 const publicClient = new Gdax.PublicClient();
-const BitMEXClient = require("bitmex-realtime-api");
-const bitmexClient = new BitMEXClient({
-  testnet: false
-});
+const BFX = require('bitfinex-api-node')
+const bfx = new BFX({
+  apiKey: '...',
+  apiSecret: '...',
+
+  ws: {
+    autoReconnect: true,
+    seqAudit: true,
+    packetWDDelay: 10 * 1000
+  }
+})
 
 const APIKEY = "xxx";
 const APISECRET = "xxx";
@@ -100,6 +107,7 @@ ask_initial_request = () => {
       inquirer.prompt(monitor_input).then(answers => {
         size = answers.size;
         monitor_bitmex()
+        monitor_bfx()
         monitor_btc()
       });
     } else if (answer.menu === "Quit Bot") {
@@ -228,17 +236,60 @@ ask_default_pair = () => {
   });
 };
 
+monitor_bfx = () => {
+  const ws = bfx.ws()
+
+  ws.on('error', (err) => console.log(err))
+  ws.on('open', () => {
+    ws.subscribeTrades('BTCUSD')
+  })
+
+  ws.onTrades({
+    pair: 'BTCUSD'
+  }, (trades) => {
+    if (Math.abs(trades[trades.length - 1][2]) >= size) {
+      if (trades[trades.length - 1][2] >= 0) {
+        console.log(
+          chalk.bold.green(
+            "Exchange: Bitfinex | Type: Buy  | Value: $" +
+            (trades[trades.length - 1][2] * trades[trades.length - 1][3]).toFixed(2) +
+            " | Quantity: " +
+            (trades[trades.length - 1][2]).toFixed(3) +
+            " BTC"
+          )
+        );
+      } else {
+        console.log(
+          chalk.bold.red(
+            "Exchange: Bitfinex | Type: Sell | Value: $" +
+            (trades[trades.length - 1][2] * trades[trades.length - 1][3] * -1).toFixed(2) +
+            " | Quantity: " +
+            (trades[trades.length - 1][2] * -1).toFixed(3) +
+            " BTC"
+          )
+        );
+      }
+    }
+  })
+
+
+  ws.open()
+}
 monitor_bitmex = () => {
+  const BitMEXClient = require("bitmex-realtime-api");
+  const bitmexClient = new BitMEXClient({
+    testnet: false
+  });
   bitmexClient.on('error', console.error);
-  bitmexClient.on('open', () => console.log('Connection opened.'));
-  bitmexClient.on('close', () => console.log('Connection closed.'));
-  bitmexClient.on('initialize', () => console.log('Client initialized, data is flowing.'));
+  bitmexClient.on('open', () => console.log(''));
+  bitmexClient.on('close', () => console.log(''));
+  bitmexClient.on('initialize', () => console.log(''));
   bitmexClient.addStream('XBTUSD', 'trade', function (data, symbol, tableName) {
-    if (data[data.length - 1].size / data[data.length - 1].price > size) {
+    if (data[data.length - 1].size / data[data.length - 1].price >= size) {
       if (data[data.length - 1].side == 'Buy') {
         console.log(
           chalk.bold.green(
-            "Exchange: Bitmex  | Type: Buy  | Value: $" +
+            "Exchange: Bitmex   | Type: Buy  | Value: $" +
             (data[data.length - 1].size).toFixed(2) +
             " | Quantity: " +
             (data[data.length - 1].size / data[data.length - 1].price).toFixed(3) +
@@ -248,7 +299,7 @@ monitor_bitmex = () => {
       } else if (data[data.length - 1].side == 'Sell') {
         console.log(
           chalk.bold.red(
-            "Exchange: Bitmex  | Type: Sell | Value: $" +
+            "Exchange: Bitmex   | Type: Sell | Value: $" +
             (data[data.length - 1].size).toFixed(2) +
             " | Quantity: " +
             (data[data.length - 1].size / data[data.length - 1].price).toFixed(3) +
@@ -281,11 +332,11 @@ monitor_btc = () => {
           }
         }
         if (!alreadyAdded) {
-          if (trades[x].qty > size) {
+          if (trades[x].qty >= size) {
             if (!trades[x].isBuyerMaker && trades[x].price > lastPrice) {
               console.log(
                 chalk.bold.green(
-                  "Exchange: Binance | Type: Buy  | Value: $" +
+                  "Exchange: Binance  | Type: Buy  | Value: $" +
                   Number(trades[x].price * trades[x].qty).toFixed(2) +
                   " | Quantity: " +
                   Number(trades[x].qty).toFixed(3) +
@@ -295,7 +346,7 @@ monitor_btc = () => {
             } else {
               console.log(
                 chalk.bold.red(
-                  "Exchange: Binance | Type: Sell | Value: $" +
+                  "Exchange: Binance  | Type: Sell | Value: $" +
                   Number(trades[x].price * trades[x].qty).toFixed(2) +
                   " | Quantity: " +
                   Number(trades[x].qty).toFixed(3) +
