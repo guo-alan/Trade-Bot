@@ -333,27 +333,29 @@ monitor_bitmex = () => {
   bitmexClient.on('close', () => console.log(''));
   bitmexClient.on('initialize', () => console.log(''));
   bitmexClient.addStream('XBTUSD', 'trade', function (data, symbol, tableName) {
-    if (data[data.length - 1].size / data[data.length - 1].price >= size) {
-      if (data[data.length - 1].side == 'Buy') {
-        console.log(
-          chalk.bold.green(
-            "Exchange: Bitmex   | Type: Buy  | BTC-USD: $" + data[data.length - 1].price.toFixed(2) + " | Value: $" +
-            (data[data.length - 1].size).toFixed(2) +
-            " | Quantity: " +
-            (data[data.length - 1].size / data[data.length - 1].price).toFixed(3) +
-            " BTC"
-          )
-        );
-      } else if (data[data.length - 1].side == 'Sell') {
-        console.log(
-          chalk.bold.red(
-            "Exchange: Bitmex   | Type: Sell | BTC-USD: $" + data[data.length - 1].price.toFixed(2) + " | Value: $" +
-            (data[data.length - 1].size).toFixed(2) +
-            " | Quantity: " +
-            (data[data.length - 1].size / data[data.length - 1].price).toFixed(3) +
-            " BTC"
-          )
-        );
+    if (data[data.length - 1].size != undefined || data[data.length - 1].size != null) {
+      if (data[data.length - 1].size / data[data.length - 1].price >= size) {
+        if (data[data.length - 1].side == 'Buy') {
+          console.log(
+            chalk.bold.green(
+              "Exchange: Bitmex   | Type: Buy  | BTC-USD: $" + data[data.length - 1].price.toFixed(2) + " | Value: $" +
+              (data[data.length - 1].size).toFixed(2) +
+              " | Quantity: " +
+              (data[data.length - 1].size / data[data.length - 1].price).toFixed(3) +
+              " BTC"
+            )
+          );
+        } else if (data[data.length - 1].side == 'Sell') {
+          console.log(
+            chalk.bold.red(
+              "Exchange: Bitmex   | Type: Sell | BTC-USD: $" + data[data.length - 1].price.toFixed(2) + " | Value: $" +
+              (data[data.length - 1].size).toFixed(2) +
+              " | Quantity: " +
+              (data[data.length - 1].size / data[data.length - 1].price).toFixed(3) +
+              " BTC"
+            )
+          );
+        }
       }
     }
   });

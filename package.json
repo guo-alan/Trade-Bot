@@ -21,6 +21,7 @@
     "configstore": "^3.1.2",
     "figlet": "^1.2.0",
     "gdax": "^0.8.0",
+    "hoek": "^4.2.1",
     "inquirer": "^5.2.0",
     "lodash": "^4.17.10",
     "moment": "^2.22.1",
