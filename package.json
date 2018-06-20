@@ -17,6 +17,7 @@
     "bitmex-realtime-api": "^0.3.0",
     "chalk": "^2.3.0",
     "clear": "0.0.1",
+    "cli-progress": "^2.0.0",
     "configstore": "^3.1.2",
     "figlet": "^1.2.0",
     "gdax": "^0.8.0",

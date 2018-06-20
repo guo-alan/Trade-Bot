@@ -12,13 +12,10 @@ const inquirer = require("inquirer");
 const binance = require("binance-api-node").default;
 const Gdax = require("gdax");
 const websocket = new Gdax.WebsocketClient(['BTC-USD']);
-
-// const publicClient = new Gdax.PublicClient();
 const BFX = require('bitfinex-api-node')
 const bfx = new BFX({
   apiKey: '...',
   apiSecret: '...',
-
   ws: {
     autoReconnect: true,
     seqAudit: true,
@@ -250,7 +247,7 @@ monitor_gdax = () => {
         if (data.side == 'buy') {
           console.log(
             chalk.bold.green(
-              "Exchange: GDAX     | Type: Buy  | Value: $" +
+              "Exchange: GDAX     | Type: Buy  | BTC-USD: $" + Number(data.price).toFixed(2) + " | Value: $" +
               (Number(data.price) * Number(data.size)).toFixed(2) +
               " | Quantity: " +
               (Number(data.size)).toFixed(3) +
@@ -260,7 +257,7 @@ monitor_gdax = () => {
         } else {
           console.log(
             chalk.bold.red(
-              "Exchange: GDAX     | Type: Sell | Value: $" +
+              "Exchange: GDAX     | Type: Sell | BTC-USD: $" + Number(data.price).toFixed(2) + " | Value: $" +
               (Number(data.price) * Number(data.size)).toFixed(2) +
               " | Quantity: " +
               (Number(data.size)).toFixed(3) +
@@ -301,7 +298,7 @@ monitor_bfx = () => {
       if (trades[trades.length - 1][2] >= 0) {
         console.log(
           chalk.bold.green(
-            "Exchange: Bitfinex | Type: Buy  | Value: $" +
+            "Exchange: Bitfinex | Type: Buy  | BTC-USD: $" + trades[trades.length - 1][3].toFixed(2) + " | Value: $" +
             (trades[trades.length - 1][2] * trades[trades.length - 1][3]).toFixed(2) +
             " | Quantity: " +
             (trades[trades.length - 1][2]).toFixed(3) +
@@ -311,7 +308,7 @@ monitor_bfx = () => {
       } else {
         console.log(
           chalk.bold.red(
-            "Exchange: Bitfinex | Type: Sell | Value: $" +
+            "Exchange: Bitfinex | Type: Sell | BTC-USD: $" + trades[trades.length - 1][3].toFixed(2) + " | Value: $" +
             (trades[trades.length - 1][2] * trades[trades.length - 1][3] * -1).toFixed(2) +
             " | Quantity: " +
             (trades[trades.length - 1][2] * -1).toFixed(3) +
@@ -340,7 +337,7 @@ monitor_bitmex = () => {
       if (data[data.length - 1].side == 'Buy') {
         console.log(
           chalk.bold.green(
-            "Exchange: Bitmex   | Type: Buy  | Value: $" +
+            "Exchange: Bitmex   | Type: Buy  | BTC-USD: $" + data[data.length - 1].price.toFixed(2) + " | Value: $" +
             (data[data.length - 1].size).toFixed(2) +
             " | Quantity: " +
             (data[data.length - 1].size / data[data.length - 1].price).toFixed(3) +
@@ -350,7 +347,7 @@ monitor_bitmex = () => {
       } else if (data[data.length - 1].side == 'Sell') {
         console.log(
           chalk.bold.red(
-            "Exchange: Bitmex   | Type: Sell | Value: $" +
+            "Exchange: Bitmex   | Type: Sell | BTC-USD: $" + data[data.length - 1].price.toFixed(2) + " | Value: $" +
             (data[data.length - 1].size).toFixed(2) +
             " | Quantity: " +
             (data[data.length - 1].size / data[data.length - 1].price).toFixed(3) +
@@ -387,7 +384,7 @@ monitor_btc = () => {
             if (!trades[x].isBuyerMaker && trades[x].price > lastPrice) {
               console.log(
                 chalk.bold.green(
-                  "Exchange: Binance  | Type: Buy  | Value: $" +
+                  "Exchange: Binance  | Type: Buy  | BTC-USD: $" + Number(trades[x].price).toFixed(2) + " | Value: $" +
                   Number(trades[x].price * trades[x].qty).toFixed(2) +
                   " | Quantity: " +
                   Number(trades[x].qty).toFixed(3) +
@@ -397,7 +394,7 @@ monitor_btc = () => {
             } else {
               console.log(
                 chalk.bold.red(
-                  "Exchange: Binance  | Type: Sell | Value: $" +
+                  "Exchange: Binance  | Type: Sell | BTC-USD: $" + Number(trades[x].price).toFixed(2) + " | Value: $" +
                   Number(trades[x].price * trades[x].qty).toFixed(2) +
                   " | Quantity: " +
                   Number(trades[x].qty).toFixed(3) +
