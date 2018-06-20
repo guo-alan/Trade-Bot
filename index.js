@@ -6,10 +6,14 @@ const numeral = require("numeral");
 const clear = require("clear");
 const figlet = require("figlet");
 const Configstore = require("configstore");
-const binance = require("binance-api-node").default;
 const inquirer = require("inquirer");
+
+//exchanges
+const binance = require("binance-api-node").default;
 const Gdax = require("gdax");
-const publicClient = new Gdax.PublicClient();
+const websocket = new Gdax.WebsocketClient(['BTC-USD']);
+
+// const publicClient = new Gdax.PublicClient();
 const BFX = require('bitfinex-api-node')
 const bfx = new BFX({
   apiKey: '...',
@@ -21,6 +25,8 @@ const bfx = new BFX({
     packetWDDelay: 10 * 1000
   }
 })
+var OKEX = require('okex-rest');
+var okexClient = new OKEX();
 
 const APIKEY = "xxx";
 const APISECRET = "xxx";
@@ -49,9 +55,9 @@ let price_direction = 0;
 let precision = 8;
 let tot_cancel = 0;
 let recentTrades = [];
-let recentTrades1 = [];
+// let recentTrades1 = [];
 
-let enableGdax = false;
+// let enableGdax = false;
 let size = 0.1;
 const client = binance({
   apiKey: APIKEY,
@@ -106,6 +112,7 @@ ask_initial_request = () => {
     } else if (answer.menu === "Monitor BTC") {
       inquirer.prompt(monitor_input).then(answers => {
         size = answers.size;
+        monitor_gdax()
         monitor_bitmex()
         monitor_bfx()
         monitor_btc()
@@ -236,6 +243,49 @@ ask_default_pair = () => {
   });
 };
 
+monitor_gdax = () => {
+  websocket.on('message', data => {
+    if (data.side != null && data.size != null && data.price != null && data.type == 'match') {
+      if (Number(data.size) >= size) {
+        if (data.side == 'buy') {
+          console.log(
+            chalk.bold.green(
+              "Exchange: GDAX     | Type: Buy  | Value: $" +
+              (Number(data.price) * Number(data.size)).toFixed(2) +
+              " | Quantity: " +
+              (Number(data.size)).toFixed(3) +
+              " BTC"
+            )
+          );
+        } else {
+          console.log(
+            chalk.bold.red(
+              "Exchange: GDAX     | Type: Sell | Value: $" +
+              (Number(data.price) * Number(data.size)).toFixed(2) +
+              " | Quantity: " +
+              (Number(data.size)).toFixed(3) +
+              " BTC"
+            )
+          );
+        }
+      }
+    }
+  });
+}
+
+monitor_okex = () => {
+  okexClient.getTrades(logResponse, 'ltc_btc');
+}
+
+function logResponse(err, data) {
+  if (err) {
+    console.log('error name %s', err.name);
+    console.log('error message %s', err);
+  }
+
+  console.log('\ndata: %s', JSON.stringify(data));
+}
+
 monitor_bfx = () => {
   const ws = bfx.ws()
 
@@ -275,6 +325,7 @@ monitor_bfx = () => {
 
   ws.open()
 }
+
 monitor_bitmex = () => {
   const BitMEXClient = require("bitmex-realtime-api");
   const bitmexClient = new BitMEXClient({
@@ -357,55 +408,6 @@ monitor_btc = () => {
           }
           recentTrades.push(trades[x]);
         }
-      }
-      if (enableGdax) {
-        const gTrades = publicClient
-          .getProductTrades("BTC-USD")
-          .then(trades => {
-            for (let x = 0; x < trades.length; x++) {
-              let alreadyAdded = false;
-              let lastPrice;
-              if (x == 0) {
-                lastPrice = trades[0].price;
-              } else {
-                lastPrice = trades[x - 1].price;
-              }
-              for (let y = 0; y < recentTrades1.length; y++) {
-                if (recentTrades1[y].time == trades[x].time) {
-                  alreadyAdded = true;
-                }
-              }
-              if (!alreadyAdded) {
-                if (trades[x].size > size) {
-                  if (trades[x].side == "buy") {
-                    console.log(
-                      chalk.bold.green(
-                        "Exchange: GDAX    | Type: Buy  | Value: $" +
-                        Number(trades[x].price * trades[x].size).toFixed(2) +
-                        " | Quantity: " +
-                        Number(trades[x].size).toFixed(3) +
-                        " BTC"
-                      )
-                    );
-                  } else {
-                    console.log(
-                      chalk.bold.red(
-                        "Exchange: GDAX    | Type: Sell | Value: $" +
-                        Number(trades[x].price * trades[x].size).toFixed(2) +
-                        " | Quantity: " +
-                        Number(trades[x].size).toFixed(3) +
-                        " BTC"
-                      )
-                    );
-                  }
-                }
-                recentTrades1.push(trades[x]);
-              }
-            }
-          })
-          .catch(error => {
-            report.fail(chalk.yellow("Error"));
-          });
       }
       monitor_btc();
     })
