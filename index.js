@@ -60,44 +60,50 @@ const client = binance({
 });
 
 const conf = new Configstore("nbt");
-let default_pair = conf.get("nbt.default_pair") ?
-  conf.get("nbt.default_pair") :
-  "BTCUSDT";
+let default_pair = conf.get("nbt.default_pair")
+  ? conf.get("nbt.default_pair")
+  : "BTCUSDT";
 let buy_amount = conf.get("nbt.buy_amount") ? conf.get("nbt.buy_amount") : 1.0;
-let profit_pourcent = conf.get("nbt.profit_pourcent") ?
-  conf.get("nbt.profit_pourcent") :
-  0.8;
-let loss_pourcent = conf.get("nbt.loss_pourcent") ?
-  conf.get("nbt.loss_pourcent") :
-  0.4;
+let profit_pourcent = conf.get("nbt.profit_pourcent")
+  ? conf.get("nbt.profit_pourcent")
+  : 0.8;
+let loss_pourcent = conf.get("nbt.loss_pourcent")
+  ? conf.get("nbt.loss_pourcent")
+  : 0.4;
 
 clear();
 
-var viewRequest = [{
-  type: "list",
-  name: "menu",
-  default: 0,
-  message: chalk.cyan("What to do?"),
-  choices: ["View Pair", "Monitor BTC", "Quit Bot"]
-}];
-
-var default_pair_input = [{
-  type: "input",
-  name: "pair",
-  message: chalk.cyan("Enter Cryptocurrency Pair"),
-  default: default_pair
-}];
-
-var monitor_input = [{
-  type: "input",
-  name: "size",
-  message: chalk.cyan("Enter BTC Qty Trigger"),
-  default: 0,
-  validate: function (value) {
-    var valid = !isNaN(parseFloat(value)) && value >= 0;
-    return valid || "Please enter a number >= 0";
+var viewRequest = [
+  {
+    type: "list",
+    name: "menu",
+    default: 0,
+    message: chalk.cyan("What to do?"),
+    choices: ["View Pair", "Monitor BTC", "Quit Bot"]
   }
-}];
+];
+
+var default_pair_input = [
+  {
+    type: "input",
+    name: "pair",
+    message: chalk.cyan("Enter Cryptocurrency Pair"),
+    default: default_pair
+  }
+];
+
+var monitor_input = [
+  {
+    type: "input",
+    name: "size",
+    message: chalk.cyan("Enter BTC Qty Trigger"),
+    default: 0,
+    validate: function(value) {
+      var valid = !isNaN(parseFloat(value)) && value >= 0;
+      return valid || "Please enter a number >= 0";
+    }
+  }
+];
 
 ask_initial_request = () => {
   console.log(" ");
@@ -170,11 +176,11 @@ ask_default_pair = () => {
               candles[candles.length - 120].close)) /
           candles[candles.length - 120].open;
         price_direction =
-          parseFloat(candles[candles.length - 1].close) > last_price ?
-          1 :
-          parseFloat(candles[candles.length - 1].close) < last_price ?
-          -1 :
-          0;
+          parseFloat(candles[candles.length - 1].close) > last_price
+            ? 1
+            : parseFloat(candles[candles.length - 1].close) < last_price
+              ? -1
+              : 0;
         last_price = parseFloat(candles[candles.length - 1].close);
 
         report.text = candle_report();
@@ -200,11 +206,11 @@ ask_default_pair = () => {
             (100.0 * (minute_prices[0] - minute_prices[120])) /
             minute_prices[120];
           price_direction =
-            parseFloat(candle.close) > last_price ?
-            1 :
-            parseFloat(candle.close) < last_price ?
-            -1 :
-            0;
+            parseFloat(candle.close) > last_price
+              ? 1
+              : parseFloat(candle.close) < last_price
+                ? -1
+                : 0;
           last_price = parseFloat(candle.close);
 
           report.text = candle_report();
@@ -250,29 +256,51 @@ monitor_gdax = () => {
         if (data.side == "buy") {
           console.log(
             chalk.bold.green(
-              moment(data.time.slice(data.time.indexOf('T') + 1, data.time.indexOf('.')), "HH:mm:ss").subtract(moment.duration({
-                hours: 5
-              })).format("HH:mm:ss") + " Exchange: GDAX     | Type: Buy  | BTC-USD: $" +
-              Number(data.price).toFixed(2) +
-              " | Value: $" +
-              (Number(data.price) * Number(data.size)).toFixed(2) +
-              " | Quantity: " +
-              Number(data.size).toFixed(3) +
-              " BTC"
+              moment(
+                data.time.slice(
+                  data.time.indexOf("T") + 1,
+                  data.time.indexOf(".")
+                ),
+                "HH:mm:ss"
+              )
+                .subtract(
+                  moment.duration({
+                    hours: 5
+                  })
+                )
+                .format("HH:mm:ss") +
+                " Exchange: GDAX     | Type: Buy  | BTC-USD: $" +
+                Number(data.price).toFixed(2) +
+                " | Quantity: " +
+                Number(data.size).toFixed(3) +
+                " BTC" +
+                " | Value: $" +
+                (Number(data.price) * Number(data.size)).toFixed(2)
             )
           );
         } else {
           console.log(
             chalk.bold.red(
-              moment(data.time.slice(data.time.indexOf('T') + 1, data.time.indexOf('.')), "HH:mm:ss").subtract(moment.duration({
-                hours: 5
-              })).format("HH:mm:ss") + " Exchange: GDAX     | Type: Sell | BTC-USD: $" +
-              Number(data.price).toFixed(2) +
-              " | Value: $" +
-              (Number(data.price) * Number(data.size)).toFixed(2) +
-              " | Quantity: " +
-              Number(data.size).toFixed(3) +
-              " BTC"
+              moment(
+                data.time.slice(
+                  data.time.indexOf("T") + 1,
+                  data.time.indexOf(".")
+                ),
+                "HH:mm:ss"
+              )
+                .subtract(
+                  moment.duration({
+                    hours: 5
+                  })
+                )
+                .format("HH:mm:ss") +
+                " Exchange: GDAX     | Type: Sell | BTC-USD: $" +
+                Number(data.price).toFixed(2) +
+                " | Quantity: " +
+                Number(data.size).toFixed(3) +
+                " BTC" +
+                " | Value: $" +
+                (Number(data.price) * Number(data.size)).toFixed(2)
             )
           );
         }
@@ -302,7 +330,8 @@ monitor_bfx = () => {
     ws.subscribeTrades("BTCUSD");
   });
 
-  ws.onTrades({
+  ws.onTrades(
+    {
       pair: "BTCUSD"
     },
     trades => {
@@ -310,31 +339,33 @@ monitor_bfx = () => {
         if (trades[trades.length - 1][2] >= 0) {
           console.log(
             chalk.bold.green(
-              moment(trades[trades.length - 1][1]).format("HH:mm:ss") + " Exchange: Bitfinex | Type: Buy  | BTC-USD: $" +
-              trades[trades.length - 1][3].toFixed(2) +
-              " | Value: $" +
-              (
-                trades[trades.length - 1][2] * trades[trades.length - 1][3]
-              ).toFixed(2) +
-              " | Quantity: " +
-              trades[trades.length - 1][2].toFixed(3) +
-              " BTC"
+              moment(trades[trades.length - 1][1]).format("HH:mm:ss") +
+                " Exchange: Bitfinex | Type: Buy  | BTC-USD: $" +
+                trades[trades.length - 1][3].toFixed(2) +
+                " | Quantity: " +
+                trades[trades.length - 1][2].toFixed(3) +
+                " BTC" +
+                " | Value: $" +
+                (
+                  trades[trades.length - 1][2] * trades[trades.length - 1][3]
+                ).toFixed(2)
             )
           );
         } else {
           console.log(
             chalk.bold.red(
-              moment(trades[trades.length - 1][1]).format("HH:mm:ss") + " Exchange: Bitfinex | Type: Sell | BTC-USD: $" +
-              trades[trades.length - 1][3].toFixed(2) +
-              " | Value: $" +
-              (
-                trades[trades.length - 1][2] *
-                trades[trades.length - 1][3] *
-                -1
-              ).toFixed(2) +
-              " | Quantity: " +
-              (trades[trades.length - 1][2] * -1).toFixed(3) +
-              " BTC"
+              moment(trades[trades.length - 1][1]).format("HH:mm:ss") +
+                " Exchange: Bitfinex | Type: Sell | BTC-USD: $" +
+                trades[trades.length - 1][3].toFixed(2) +
+                " | Quantity: " +
+                (trades[trades.length - 1][2] * -1).toFixed(3) +
+                " BTC" +
+                " | Value: $" +
+                (
+                  trades[trades.length - 1][2] *
+                  trades[trades.length - 1][3] *
+                  -1
+                ).toFixed(2)
             )
           );
         }
@@ -354,7 +385,7 @@ monitor_bitmex = () => {
   bitmexClient.on("open", () => console.log(""));
   bitmexClient.on("close", () => console.log(""));
   bitmexClient.on("initialize", () => console.log(""));
-  bitmexClient.addStream("XBTUSD", "trade", function (data, symbol, tableName) {
+  bitmexClient.addStream("XBTUSD", "trade", function(data, symbol, tableName) {
     if (
       data[data.length - 1].size != undefined &&
       data[data.length - 1].size != null
@@ -363,33 +394,55 @@ monitor_bitmex = () => {
         if (data[data.length - 1].side == "Buy") {
           console.log(
             chalk.bold.green(
-              moment(data[data.length - 1].timestamp.slice(data[data.length - 1].timestamp.indexOf('T') + 1, data[data.length - 1].timestamp.indexOf('.')), "HH:mm:ss").subtract(moment.duration({
-                hours: 5
-              })).format("HH:mm:ss") + " Exchange: Bitmex   | Type: Buy  | BTC-USD: $" +
-              data[data.length - 1].price.toFixed(2) +
-              " | Value: $" +
-              data[data.length - 1].size.toFixed(2) +
-              " | Quantity: " +
-              (
-                data[data.length - 1].size / data[data.length - 1].price
-              ).toFixed(3) +
-              " BTC"
+              moment(
+                data[data.length - 1].timestamp.slice(
+                  data[data.length - 1].timestamp.indexOf("T") + 1,
+                  data[data.length - 1].timestamp.indexOf(".")
+                ),
+                "HH:mm:ss"
+              )
+                .subtract(
+                  moment.duration({
+                    hours: 5
+                  })
+                )
+                .format("HH:mm:ss") +
+                " Exchange: Bitmex   | Type: Buy  | BTC-USD: $" +
+                data[data.length - 1].price.toFixed(2) +
+                " | Quantity: " +
+                (
+                  data[data.length - 1].size / data[data.length - 1].price
+                ).toFixed(3) +
+                " BTC" +
+                " | Value: $" +
+                data[data.length - 1].size.toFixed(2)
             )
           );
         } else if (data[data.length - 1].side == "Sell") {
           console.log(
             chalk.bold.red(
-              moment(data[data.length - 1].timestamp.slice(data[data.length - 1].timestamp.indexOf('T') + 1, data[data.length - 1].timestamp.indexOf('.')), "HH:mm:ss").subtract(moment.duration({
-                hours: 5
-              })).format("HH:mm:ss") + " Exchange: Bitmex   | Type: Sell | BTC-USD: $" +
-              data[data.length - 1].price.toFixed(2) +
-              " | Value: $" +
-              data[data.length - 1].size.toFixed(2) +
-              " | Quantity: " +
-              (
-                data[data.length - 1].size / data[data.length - 1].price
-              ).toFixed(3) +
-              " BTC"
+              moment(
+                data[data.length - 1].timestamp.slice(
+                  data[data.length - 1].timestamp.indexOf("T") + 1,
+                  data[data.length - 1].timestamp.indexOf(".")
+                ),
+                "HH:mm:ss"
+              )
+                .subtract(
+                  moment.duration({
+                    hours: 5
+                  })
+                )
+                .format("HH:mm:ss") +
+                " Exchange: Bitmex   | Type: Sell | BTC-USD: $" +
+                data[data.length - 1].price.toFixed(2) +
+                " | Quantity: " +
+                (
+                  data[data.length - 1].size / data[data.length - 1].price
+                ).toFixed(3) +
+                " BTC" +
+                " | Value: $" +
+                data[data.length - 1].size.toFixed(2)
             )
           );
         }
@@ -423,25 +476,27 @@ monitor_binance = () => {
             if (!trades[x].isBuyerMaker && trades[x].price > lastPrice) {
               console.log(
                 chalk.bold.green(
-                  moment(trades[x].time).format("HH:mm:ss") + " Exchange: Binance  | Type: Buy  | BTC-USD: $" +
-                  Number(trades[x].price).toFixed(2) +
-                  " | Value: $" +
-                  Number(trades[x].price * trades[x].qty).toFixed(2) +
-                  " | Quantity: " +
-                  Number(trades[x].qty).toFixed(3) +
-                  " BTC"
+                  moment(trades[x].time).format("HH:mm:ss") +
+                    " Exchange: Binance  | Type: Buy  | BTC-USD: $" +
+                    Number(trades[x].price).toFixed(2) +
+                    " | Quantity: " +
+                    Number(trades[x].qty).toFixed(3) +
+                    " BTC" +
+                    " | Value: $" +
+                    Number(trades[x].price * trades[x].qty).toFixed(2)
                 )
               );
             } else {
               console.log(
                 chalk.bold.red(
-                  moment(trades[x].time).format("HH:mm:ss") + " Exchange: Binance  | Type: Sell | BTC-USD: $" +
-                  Number(trades[x].price).toFixed(2) +
-                  " | Value: $" +
-                  Number(trades[x].price * trades[x].qty).toFixed(2) +
-                  " | Quantity: " +
-                  Number(trades[x].qty).toFixed(3) +
-                  " BTC"
+                  moment(trades[x].time).format("HH:mm:ss") +
+                    " Exchange: Binance  | Type: Sell | BTC-USD: $" +
+                    Number(trades[x].price).toFixed(2) +
+                    " | Quantity: " +
+                    Number(trades[x].qty).toFixed(3) +
+                    " BTC" +
+                    " | Value: $" +
+                    Number(trades[x].price * trades[x].qty).toFixed(2)
                 )
               );
             }
@@ -460,57 +515,59 @@ candle_report = () => {
   return (
     chalk.grey(
       moment()
-      .format("h:mm:ss")
-      .padStart(9)
+        .format("h:mm:ss")
+        .padStart(9)
     ) +
     chalk.yellow(default_pair.padStart(11)) +
-    (price_direction === 1 ?
-      chalk.green(" + ") :
-      price_direction === -1 ?
-      chalk.red(" - ") :
-      "   ") +
+    (price_direction === 1
+      ? chalk.green(" + ")
+      : price_direction === -1
+        ? chalk.red(" - ")
+        : "   ") +
     chalk.cyan(minute_price).padEnd(20) +
     chalk.white("Volume: ") +
     chalk.white(String(minute_volume).padEnd(12)) +
     chalk.gray(" Current: ") +
-    (curr_min_delta > 0 ?
-      chalk.green((numeral(curr_min_delta).format("0.000") + "%").padEnd(8)) :
-      chalk.red((numeral(curr_min_delta).format("0.000") + "%").padEnd(8))) +
-    (curr_min_delta > 2 ?
-      chalk.green("Short Squeeze".padEnd(8)) :
-      curr_min_delta < -2 ?
-      chalk.red("Long Squeeze".padEnd(8)) :
-      "") +
+    (curr_min_delta > 0
+      ? chalk.green((numeral(curr_min_delta).format("0.000") + "%").padEnd(8))
+      : chalk.red((numeral(curr_min_delta).format("0.000") + "%").padEnd(8))) +
+    (curr_min_delta > 2
+      ? chalk.green("Short Squeeze".padEnd(8))
+      : curr_min_delta < -2
+        ? chalk.red("Long Squeeze".padEnd(8))
+        : "") +
     chalk.gray(" 1m: ") +
-    (last_min_delta > 0 ?
-      chalk.green((numeral(last_min_delta).format("0.000") + "%").padEnd(8)) :
-      chalk.red((numeral(last_min_delta).format("0.000") + "%").padEnd(8))) +
+    (last_min_delta > 0
+      ? chalk.green((numeral(last_min_delta).format("0.000") + "%").padEnd(8))
+      : chalk.red((numeral(last_min_delta).format("0.000") + "%").padEnd(8))) +
     chalk.gray(" 2m: ") +
-    (prev_min_delta > 0 ?
-      chalk.green((numeral(prev_min_delta).format("0.000") + "%").padEnd(8)) :
-      chalk.red((numeral(prev_min_delta).format("0.000") + "%").padEnd(8))) +
+    (prev_min_delta > 0
+      ? chalk.green((numeral(prev_min_delta).format("0.000") + "%").padEnd(8))
+      : chalk.red((numeral(prev_min_delta).format("0.000") + "%").padEnd(8))) +
     chalk.gray(" 30m: ") +
-    (half_hour_delta > 0 ?
-      chalk.green((numeral(half_hour_delta).format("0.000") + "%").padEnd(8)) :
-      chalk.red((numeral(half_hour_delta).format("0.000") + "%").padEnd(8))) +
+    (half_hour_delta > 0
+      ? chalk.green((numeral(half_hour_delta).format("0.000") + "%").padEnd(8))
+      : chalk.red((numeral(half_hour_delta).format("0.000") + "%").padEnd(8))) +
     chalk.gray(" 1h: ") +
-    (one_hour_delta > 0 ?
-      chalk.green((numeral(one_hour_delta).format("0.000") + "%").padEnd(8)) :
-      chalk.red((numeral(one_hour_delta).format("0.000") + "%").padEnd(8))) +
+    (one_hour_delta > 0
+      ? chalk.green((numeral(one_hour_delta).format("0.000") + "%").padEnd(8))
+      : chalk.red((numeral(one_hour_delta).format("0.000") + "%").padEnd(8))) +
     chalk.gray(" 2h: ") +
-    (two_hour_delta > 0 ?
-      chalk.green((numeral(two_hour_delta).format("0.000") + "%").padEnd(8)) :
-      chalk.red((numeral(two_hour_delta).format("0.000") + "%").padEnd(8)))
+    (two_hour_delta > 0
+      ? chalk.green((numeral(two_hour_delta).format("0.000") + "%").padEnd(8))
+      : chalk.red((numeral(two_hour_delta).format("0.000") + "%").padEnd(8)))
   );
 };
 
-var buy_or_change_request = [{
-  type: "list",
-  name: "menu",
-  default: 2,
-  message: chalk.cyan("What next"),
-  choices: ["Change Pair", "Market Buy", "Quit Bot"]
-}];
+var buy_or_change_request = [
+  {
+    type: "list",
+    name: "menu",
+    default: 2,
+    message: chalk.cyan("What next"),
+    choices: ["Change Pair", "Market Buy", "Quit Bot"]
+  }
+];
 
 ask_buy_or_change = () => {
   inquirer.prompt(buy_or_change_request).then(answer => {
@@ -524,12 +581,13 @@ ask_buy_or_change = () => {
   });
 };
 
-var ask_buy_info_request = [{
+var ask_buy_info_request = [
+  {
     type: "input",
     name: "buy_amount",
     default: buy_amount,
     message: chalk.cyan("Enter the amount to buy:"),
-    validate: function (value) {
+    validate: function(value) {
       var valid = !isNaN(parseFloat(value)) && value > 0;
       return valid || "Please enter a number > 0";
     },
@@ -540,7 +598,7 @@ var ask_buy_info_request = [{
     name: "loss_pourcent",
     default: loss_pourcent,
     message: chalk.magenta("Enter the stop loss percentage:"),
-    validate: function (value) {
+    validate: function(value) {
       var valid = !isNaN(parseFloat(value)) && value > 0.1 && value < 100.0;
       return valid || "Please enter a number 0.10< x <99.99";
     },
@@ -551,7 +609,7 @@ var ask_buy_info_request = [{
     name: "profit_pourcent",
     default: profit_pourcent,
     message: chalk.green("Enter the profit percentage:"),
-    validate: function (value) {
+    validate: function(value) {
       var valid = !isNaN(parseFloat(value)) && value > 0.1 && value < 100.0;
       return valid || "Please enter a number between 0.10 and 99.99";
     },
@@ -583,15 +641,15 @@ ask_buy_info = () => {
       client.exchangeInfo().then(results => {
         precision =
           _
-          .filter(results.symbols, {
-            symbol: default_pair
-          })[0]
-          .filters[0].tickSize.indexOf("1") - 1;
+            .filter(results.symbols, {
+              symbol: default_pair
+            })[0]
+            .filters[0].tickSize.indexOf("1") - 1;
         report.text =
           chalk.grey(
             moment()
-            .format("h:mm:ss")
-            .padStart(9)
+              .format("h:mm:ss")
+              .padStart(9)
           ) +
           chalk.yellow(default_pair.padStart(11)) +
           chalk.white(
@@ -609,14 +667,14 @@ ask_buy_info = () => {
             report.text =
               chalk.grey(
                 moment()
-                .format("h:mm:ss")
-                .padStart(9)
+                  .format("h:mm:ss")
+                  .padStart(9)
               ) +
               chalk.yellow(default_pair.padStart(11)) +
               chalk.white(
                 " Last trade price was: " +
-                buy_price +
-                " Let's try to buy at this price."
+                  buy_price +
+                  " Let's try to buy at this price."
               );
 
             // Try to buy at the last price:
@@ -633,8 +691,8 @@ ask_buy_info = () => {
                 var log_report =
                   chalk.grey(
                     moment()
-                    .format("h:mm:ss")
-                    .padStart(9)
+                      .format("h:mm:ss")
+                      .padStart(9)
                   ) +
                   chalk.yellow(default_pair.padStart(11)) +
                   chalk.white(" INITIAL BUY ORDER SET AT " + buy_price);
@@ -696,7 +754,8 @@ ask_buy_info = () => {
                                         symbol: default_pair,
                                         side: "BUY",
                                         type: "MARKET",
-                                        quantity: parseFloat(order_result.origQty) -
+                                        quantity:
+                                          parseFloat(order_result.origQty) -
                                           parseFloat(order_result.executedQty),
                                         recvWindow: 1000000
                                       })
@@ -1181,30 +1240,30 @@ add_status_to_trade_report = (trade, status) => {
   return (
     chalk.grey(
       moment()
-      .format("h:mm:ss")
-      .padStart(9)
+        .format("h:mm:ss")
+        .padStart(9)
     ) +
     chalk.yellow(trade.symbol.padStart(11)) +
-    (!trade.maker ?
-      chalk.green(
-        (
-          chalk.grey("qty:") + numeral(trade.quantity).format("0.000")
-        ).padStart(24)
-      ) :
-      chalk.red(
-        (
-          chalk.grey("qty:") + numeral(trade.quantity).format("0.000")
-        ).padStart(24)
-      )) +
+    (!trade.maker
+      ? chalk.green(
+          (
+            chalk.grey("qty:") + numeral(trade.quantity).format("0.000")
+          ).padStart(24)
+        )
+      : chalk.red(
+          (
+            chalk.grey("qty:") + numeral(trade.quantity).format("0.000")
+          ).padStart(24)
+        )) +
     chalk.grey(" @ ") +
     chalk.cyan(trade.price).padEnd(24) +
-    (pnl >= 0 ?
-      chalk.green(
-        (chalk.grey("pnl:") + numeral(pnl).format("0.000")).padStart(16)
-      ) :
-      chalk.red(
-        (chalk.grey("pnl:") + numeral(pnl).format("0.000")).padStart(16)
-      )) +
+    (pnl >= 0
+      ? chalk.green(
+          (chalk.grey("pnl:") + numeral(pnl).format("0.000")).padStart(16)
+        )
+      : chalk.red(
+          (chalk.grey("pnl:") + numeral(pnl).format("0.000")).padStart(16)
+        )) +
     chalk.white(status)
   );
 };
