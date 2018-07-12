@@ -7,7 +7,8 @@ const clear = require("clear");
 const figlet = require("figlet");
 const Configstore = require("configstore");
 const inquirer = require("inquirer");
-
+const puretext = require('puretext');
+require('request');
 //exchanges
 const binance = require("binance-api-node").default;
 const Gdax = require("gdax");
@@ -54,7 +55,7 @@ let tot_cancel = 0;
 let recentTrades = [];
 let bitcoinPricesMin = [];
 let bitcoinAvg = 0;
-
+let bitcoinTxCount = 0;
 let size = 0.1;
 const client = binance({
   apiKey: APIKEY,
@@ -115,8 +116,25 @@ ask_initial_request = () => {
         monitor_binance();
         setInterval(function () {
           calculateBitcoinAvg();
-          console.log(chalk.cyan("1m avg: $"+Number(bitcoinAvg).toFixed(2)));
+          console.log(chalk.cyan("bitcoin avg (1m): $" + Number(bitcoinAvg).toFixed(2)));
+          console.log(chalk.cyan("# of trades (1m): " + bitcoinTxCount));
+          //send text if transactions count (1m) > #
+          if (bitcoinTxCount >= 100) {
+            let text = {
+              // To Number is the number you will be sending the text to.
+              toNumber: '+X-XXX-XXX-XXXX',
+              // From number is the number you will buy from your admin dashboard (https://www.puretext.us/dashboard/#/numbers)
+              fromNumber: '+XXXXXXXXXXX',
+              // Text Content
+              smsBody: bitcoinTxCount + " TXS | $" + Number(bitcoinAvg).toFixed(2),
+              //Sign up for an account to get an API Token (https://www.puretext.us/auth/google)
+              apiToken: 'XXXXX'
+            };
+
+            puretext.send(text, function (err, response) {})
+          }
           bitcoinPricesMin = [];
+          bitcoinTxCount = 0;
         }, 60000);
       });
     } else if (answer.menu === "Quit Bot") {
@@ -255,6 +273,7 @@ monitor_gdax = () => {
     ) {
       bitcoinPricesMin.push(Number(data.price));
       if (Number(data.size) >= size) {
+        bitcoinTxCount += 1;
         if (data.side == "buy") {
           console.log(
             chalk.bold.green(
@@ -338,6 +357,7 @@ monitor_bfx = () => {
     trades => {
       bitcoinPricesMin.push(Number(trades[trades.length - 1][3]));
       if (Math.abs(trades[trades.length - 1][2]) >= size) {
+        bitcoinTxCount += 1;
         if (trades[trades.length - 1][2] >= 0) {
           console.log(
             chalk.bold.green(
@@ -394,6 +414,7 @@ monitor_bitmex = () => {
     ) {
       bitcoinPricesMin.push(Number(data[data.length - 1].price))
       if (data[data.length - 1].size / data[data.length - 1].price >= size) {
+        bitcoinTxCount += 1;
         if (data[data.length - 1].side == "Buy") {
           console.log(
             chalk.bold.green(
@@ -477,6 +498,7 @@ monitor_binance = () => {
         if (!alreadyAdded) {
           bitcoinPricesMin.push(Number(trades[x].price))
           if (trades[x].qty >= size) {
+            bitcoinTxCount += 1;
             if (!trades[x].isBuyerMaker && trades[x].price > lastPrice) {
               console.log(
                 chalk.bold.green(
@@ -595,7 +617,7 @@ ask_buy_or_change = () => {
         monitor_binance();
         setInterval(function () {
           calculateBitcoinAvg();
-          console.log(chalk.cyan("1m avg: "+bitcoinAvg));
+          console.log(chalk.cyan("1m avg: " + bitcoinAvg));
           bitcoinPricesMin = [];
         }, 60000);
       });
