@@ -1,5 +1,5 @@
 {
-  "name": "Crypto Bot",
+  "name": "cryptobot",
   "version": "0.0.2",
   "description": "Cryptocurrency Monitor and Trade Bot",
   "main": "index.js",

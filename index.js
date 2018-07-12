@@ -115,7 +115,7 @@ ask_initial_request = () => {
         monitor_binance();
         setInterval(function () {
           calculateBitcoinAvg();
-          console.log(chalk.cyan("1m avg: "+bitcoinAvg));
+          console.log(chalk.cyan("1m avg: $"+Number(bitcoinAvg).toFixed(2)));
           bitcoinPricesMin = [];
         }, 60000);
       });
