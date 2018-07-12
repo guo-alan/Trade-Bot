@@ -1,5 +1,5 @@
 ## Cyptocurrency Trade/Monitor Bot
-![Demo Picture](https://raw.githubusercontent.com/guo-alan/Trade-Bot/master/demo.png)
+![Demo Picture](https://raw.githubusercontent.com/guo-alan/Trade-Bot/master/monitor-live.gif)
 
 Trade Binance Cryptocurrency pairs or monitor exchanges for major bitcoin fluctuations. Monitor uses GDAX, Binance, Bitfinex and Bitmex API calls to fetch data
 
