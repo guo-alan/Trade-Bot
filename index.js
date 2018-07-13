@@ -94,7 +94,7 @@ var default_pair_input = [{
 var monitor_input = [{
   type: "input",
   name: "size",
-  message: chalk.cyan("Enter BTC Qty Trigger"),
+  message: chalk.cyan("Enter BTC Size Trigger"),
   default: 0,
   validate: function (value) {
     var valid = !isNaN(parseFloat(value)) && value >= 0;
@@ -116,8 +116,7 @@ ask_initial_request = () => {
         monitor_binance();
         setInterval(function () {
           calculateBitcoinAvg();
-          console.log(chalk.cyan("bitcoin avg (1m): $" + Number(bitcoinAvg).toFixed(2)));
-          console.log(chalk.cyan("# of trades (1m): " + bitcoinTxCount));
+          console.log(chalk.black.bgCyan("1 min Bitcoin Avg: $" + Number(bitcoinAvg).toFixed(2) + " | # of trades: " + bitcoinTxCount));
           //send text if transactions count (1m) > #
           if (bitcoinTxCount >= 100) {
             let text = {
@@ -539,11 +538,15 @@ monitor_binance = () => {
 
 calculateBitcoinAvg = () => {
   let sum = 0;
-  for (let x = 0; x < bitcoinPricesMin.length; x++) {
-    sum += bitcoinPricesMin[x];
+  if (bitcoinPricesMin.length != 0) {
+    for (let x = 0; x < bitcoinPricesMin.length; x++) {
+      sum += bitcoinPricesMin[x];
+    }
+    bitcoinAvg = sum / bitcoinPricesMin.length;
+  } else {
+    bitcoinAvg = 0;
   }
-  bitcoinAvg = sum / bitcoinPricesMin.length;
-  return sum / bitcoinPricesMin.length;
+  return bitcoinAvg;
 }
 
 candle_report = () => {
