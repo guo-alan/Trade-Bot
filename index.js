@@ -11,6 +11,12 @@ const puretext = require('puretext');
 require('request');
 //exchanges
 const binance = require("binance-api-node").default;
+const binance2 = require('node-binance-api')().options({
+  APIKEY: 'xxx',
+  APISECRET: 'xxx',
+  useServerTime: true,
+  test: true // True = SandboxMode
+});
 const Gdax = require("gdax");
 const websocket = new Gdax.WebsocketClient(["BTC-USD"]);
 const BFX = require("bitfinex-api-node");
@@ -28,7 +34,13 @@ var okexClient = new OKEX();
 
 const APIKEY = "xxx";
 const APISECRET = "xxx";
-
+let listClose = [];
+let changeUp = 0;
+let changeDown = 0;
+let last_closeHigh = 0;
+let last_closeLow = 0;
+let current_time = Date.now();
+let period = 20;
 let tracking = false;
 let trading = false;
 let pnl = 0;
@@ -81,7 +93,7 @@ var viewRequest = [{
   name: "menu",
   default: 0,
   message: chalk.cyan("What to do?"),
-  choices: ["View Pair", "Monitor BTC", "Quit Bot"]
+  choices: ["View Pair", "Monitor BTC", "Technicals", "Quit Bot"]
 }];
 
 var default_pair_input = [{
@@ -136,6 +148,8 @@ ask_initial_request = () => {
           bitcoinTxCount = 0;
         }, 60000);
       });
+    } else if (answer.menu === "Technicals") {
+      calculateRSI();
     } else if (answer.menu === "Quit Bot") {
       process.exit();
     }
@@ -261,6 +275,60 @@ ask_default_pair = () => {
       });
   });
 };
+
+calculateRSI = () => {
+  let intervals = ['5m', '4h', '1d', '1w', '1M'];
+  intervals.forEach(timePeriod => {
+    binance2.candlesticks("BTCUSDT", timePeriod, (error, ticks, symbol) => {
+      for (i = 0; i < ticks.length; i++) {
+        let last_tick = ticks[i];
+        let [time, open, high, low, close, volume, closeTime, assetVolume, trades, buyBaseVolume, buyAssetVolume, ignored] = last_tick;
+        listClose.push(close);
+        if (i == ticks.length - 1) {
+          for (x = 0; x < ticks.length; x++) {
+            previous_close = (parseFloat(listClose[x - 1]));
+            current_close = (parseFloat(listClose[x]));
+            // HIGH
+            if (current_close > previous_close) {
+              upChange = current_close - previous_close;
+              changeUp += upChange;
+              if (x == ticks.length - 1) {
+                last_closeHigh = current_close - previous_close;
+              }
+            }
+            // LOW
+            if (previous_close > current_close) {
+              downChange = previous_close - current_close;
+              changeDown += downChange;
+              if (x == ticks.length - 1) {
+                last_closeLow = previous_close - current_close;
+              }
+            }
+            if (x == ticks.length - 1) {
+              AVGHigh = changeUp / period;
+              AVGLow = changeDown / period;
+              Upavg = (AVGHigh * (period - 1) + last_closeHigh) / (period);
+              Downavg = (AVGLow * (period - 1) + last_closeLow) / (period);
+              RS = Upavg / Downavg;
+              RSI = (100 - (100 / (1 + RS)));
+              if (RSI >= 70) {
+                console.log("BTC/USDT (" + chalk.bold.cyan(timePeriod) + ") RSI: " + chalk.bold.red(RSI.toFixed(3)));
+              } else if (RSI <= 30) {
+                console.log("BTC/USDT (" + chalk.bold.cyan(timePeriod) + ") RSI: " + chalk.bold.green(RSI.toFixed(3)));
+              } else {
+                console.log("BTC/USDT (" + chalk.bold.cyan(timePeriod) + ") RSI: " + RSI.toFixed(3));
+              }
+            }
+          }
+        }
+      }
+    }, {
+      limit: period,
+      endTime: current_time
+    });
+  });
+
+}
 
 monitor_gdax = () => {
   websocket.on("message", data => {

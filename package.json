@@ -25,6 +25,7 @@
     "inquirer": "^5.2.0",
     "lodash": "^4.17.10",
     "moment": "^2.22.1",
+    "node-binance-api": "^0.8.4",
     "numeral": "^2.0.6",
     "okex-rest": "0.0.1",
     "ora": "^2.1.0",
