@@ -23,7 +23,7 @@
     "gdax": "^0.8.0",
     "hoek": "^4.2.1",
     "inquirer": "^5.2.0",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.19",
     "moment": "^2.22.1",
     "node-binance-api": "^0.8.4",
     "numeral": "^2.0.6",
